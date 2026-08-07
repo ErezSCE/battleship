@@ -34,9 +34,9 @@ export async function placeShip(gameId: string, payload: ShipPlacementPayload) {
   }
 }
 
-export async function fireShot(gameId: string, payload: FirePayload) {
+export async function fireShot(payload: FirePayload, playerId: number = 1) {
   try {
-    const response = await api.post(`/games/${gameId}/shots`, payload);
+    const response = await api.post(`/fire`, { ...payload, player_id: playerId });
     return response.data;
   } catch (error) {
     // Preserve original error details for better diagnostics

@@ -61,38 +61,49 @@ const cells = computed(() => {
 const selected = ref<Cell[]>([]);
 
 function onCellClick(cell: Cell) {
-  // Check for overlap with existing ship cells before placement
   // Prevent duplicate selection of the same cell
   if (selected.value.some((c) => c.id === cell.id)) {
     emit('invalid-placement', { message: 'Duplicate cell selection is not allowed' });
-    // Reset selection to avoid stale state
     selected.value = [];
     return;
   }
+
   if (selected.value.length < 2) {
     selected.value.push(cell);
     if (selected.value.length === 2) {
       const [start, end] = selected.value;
       const coordinates = generateCoordinates(start, end);
+      // Validate generated coordinates are within board bounds
+      const outOfBounds = coordinates.some(coord => coord.x < 0 || coord.y < 0 || coord.x >= props.size || coord.y >= props.size);
+      if (outOfBounds) {
+        emit('invalid-placement', { message: 'Ship placement out of board bounds' });
+        selected.value = [];
+        return;
+      }
+      // Enforce maximum ship length (e.g., 5 cells)
+      const MAX_SHIP_LENGTH = 5;
+      if (coordinates.length > MAX_SHIP_LENGTH) {
+        emit('invalid-placement', { message: `Ship length exceeds maximum of ${MAX_SHIP_LENGTH}` });
+        selected.value = [];
+        return;
+      }
       if (coordinates.length > 0) {
         // Validate overlap with existing ships
         const overlap = coordinates.some(coord => shipCells.value.has(`${coord.x}-${coord.y}`));
         if (overlap) {
           emit('invalid-placement', { message: 'Ship placement overlaps existing ship' });
-          // Reset selection and abort
-          selected.value.splice(0, selected.value.length);
+          selected.value = [];
           return;
         }
         emit('place-ship', { coordinates });
         // Update shipCells set for UI feedback
         coordinates.forEach((coord) => {
           const cellId = `${coord.x}-${coord.y}`;
-          // Create a new Set to trigger reactivity
           shipCells.value = new Set([...shipCells.value, cellId]);
         });
       }
-      // reset selection regardless of validity
-      selected.value.splice(0, selected.value.length);
+      // Reset selection after handling
+      selected.value = [];
     }
   }
 }

@@ -13,23 +13,13 @@ export const useGameStore = defineStore('game', () => {
 
   function recordHit(hit: { x: number; y: number; result: string }) {
     hits.value.push(hit);
-    // Improved win detection: set winner only when a hit indicates win and all ships have been hit.
-    if (hit.result === 'win') {
-      // Simple heuristic: if number of hits equals total ship cells (assuming each ship has size 1 for demo).
-      // In a real implementation, we'd track ship health.
-      const totalShipCells = ships.value.reduce((sum, ship) => sum + ship.coordinates.length, 0);
-      if (hits.value.filter(h => h.result === 'hit' || h.result === 'win').length >= totalShipCells) {
-        winner.value = 'You';
-      }
+    // Updated win detection: when all ship cells have been hit, declare winner.
+    const totalShipCells = ships.value.reduce((sum, ship) => sum + ship.coordinates.length, 0);
+    const hitCount = hits.value.filter(h => h.result === 'hit' || h.result === 'win').length;
+    if (totalShipCells > 0 && hitCount >= totalShipCells) {
+      winner.value = 'You';
     }
   }
 
-  function reset() {
-    ships.value = [];
-    hits.value = [];
-    winner.value = null;
-  }
-
-  // Expose Pinia's built‑in reset pattern via $reset property.
-  return { ships, hits, winner, addShip, recordHit, $reset: reset };
+  return { ships, hits, winner, addShip, recordHit };
 });

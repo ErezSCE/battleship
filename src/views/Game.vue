@@ -9,6 +9,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import PlayerBoard from '../components/PlayerBoard.vue';
 import OpponentBoard from '../components/OpponentBoard.vue';
 import VictoryModal from '../components/VictoryModal.vue';
@@ -25,20 +26,19 @@ function onPlaceShip(payload: { coordinates: { x: number; y: number }[] }) {
 
 async function onFire(payload: { x: number; y: number }) {
   try {
-    // Assuming a single game context; using a placeholder gameId.
-    const gameId = 'demo-game';
-    const response = await fireShot(gameId, { x: payload.x, y: payload.y });
+    // Retrieve gameId from route params if available, otherwise use default.
+    const route = useRoute();
+    const gameId = (route.params.gameId as string) || 'demo-game';
+    // fireShot no longer requires gameId; playerId defaults to 1.
+    const response = await fireShot({ x: payload.x, y: payload.y });
     // Expect response to contain a `result` field.
-    // Validate response format
     if (!response || typeof response.result !== 'string') {
       throw new Error('Invalid response format from fireShot');
     }
     const result = response.result;
     store.recordHit({ x: payload.x, y: payload.y, result });
-    // Clear any previous error message on success
     errorMessage.value = null;
   } catch (e) {
-    // Improved error handling: capture message for UI display
     const msg = e instanceof Error ? e.message : String(e);
     errorMessage.value = msg;
     console.error('Failed to fire shot:', e);
