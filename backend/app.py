@@ -16,9 +16,13 @@ app = FastAPI()
 
 BOARD_SIZE = 10  # 10x10 board (indices 0-9)
 
+class InvalidPlacementError(Exception):
+    """Custom exception for ship placement validation errors."""
+    pass
+
 def _validate_coordinates(coords: List[Dict[str, int]]) -> List[Dict[str, int]]:
     if len(coords) < 2:
-        raise ValueError('at least two coordinates required')
+        raise InvalidPlacementError('at least two coordinates required')
     xs = {c['x'] for c in coords}
     ys = {c['y'] for c in coords}
     if len(xs) != 1 and len(ys) != 1:
@@ -49,9 +53,9 @@ def place_ship(payload: Dict):
         coords = request.coordinates
         validated = _validate_coordinates(coords)
         return {'status': 'ok', 'placed': validated}
-    except ValueError as e:
-        # Return error object with 422 status instead of raising HTTPException
-        return {'detail': str(e)}, 422
+    except InvalidPlacementError as e:
+        # Raise HTTPException with 422 status for validation errors
+        raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
         # Handles Pydantic validation errors or other issues
-        return {'detail': str(e)}, 422
+        raise HTTPException(status_code=422, detail=str(e))

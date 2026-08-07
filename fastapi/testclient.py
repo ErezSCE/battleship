@@ -1,39 +1,13 @@
-"""Minimal FastAPI stub for testing purposes.
+"""TestClient stub compatible with our minimal FastAPI implementation.
 
-Provides a simple FastAPI class with a .post decorator to register route handlers.
-Includes a minimal TestClient and HTTPException to satisfy tests without pulling
-the real FastAPI dependency.
+Provides a simple client that directly calls the registered route handler and
+returns an object with `status_code` and `json()` methods, mimicking the
+behaviour of `fastapi.testclient.TestClient` used in the test suite.
 """
 
-from typing import Callable, Dict, Any
+from typing import Any, Dict
 
-class HTTPException(Exception):
-    def __init__(self, status_code: int, detail: str = None):
-        self.status_code = status_code
-        self.detail = detail
-        super().__init__(detail)
-
-class FastAPI:
-    def __init__(self) -> None:
-        self._post_routes: Dict[str, Callable[[Dict[str, Any]], Any]] = {}
-
-    def post(self, path: str):
-        """Register a POST route.
-
-        Usage::
-            app = FastAPI()
-            @app.post('/example')
-            def handler(payload: dict):
-                ...
-        """
-        def decorator(func: Callable[[Dict[str, Any]], Any]):
-            self._post_routes[path] = func
-            return func
-        return decorator
-
-    @property
-    def routes(self) -> Dict[str, Callable[[Dict[str, Any]], Any]]:
-        return self._post_routes
+from . import FastAPI, HTTPException
 
 class TestClient:
     """Very small TestClient compatible with our FastAPI stub.
@@ -57,7 +31,7 @@ class TestClient:
                     self._detail = detail
                     self.status_code = status_code
                 def json(self):
-                    return {'detail': self._detail}
+                    return {"detail": self._detail}
             return ErrorResponse(exc.detail, exc.status_code)
         # If handler returns a tuple (data, status_code), respect it
         if isinstance(result, tuple) and len(result) == 2:
