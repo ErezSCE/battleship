@@ -57,12 +57,15 @@ function onCellClick(cell: Cell) {
     if (selected.length === 2) {
       const [start, end] = selected;
       const coordinates = generateCoordinates(start, end);
-      emit('place-ship', { coordinates });
-      // reset selection
+      if (coordinates.length > 0) {
+        emit('place-ship', { coordinates });
+      }
+      // reset selection regardless of validity
       selected.splice(0, selected.length);
     }
   }
 }
+
 
 function generateCoordinates(start: Cell, end: Cell) {
   const coords: { x: number; y: number }[] = [];
