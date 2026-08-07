@@ -39,7 +39,8 @@ export async function fireShot(gameId: string, payload: FirePayload) {
     const response = await api.post(`/games/${gameId}/shots`, payload);
     return response.data;
   } catch (error) {
-    throw new Error(`Failed to fire shot: ${(error as Error).message}`);
+    // Preserve original error details for better diagnostics
+    throw error;
   }
 }
 

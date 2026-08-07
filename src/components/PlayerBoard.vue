@@ -5,7 +5,7 @@
         v-for="cell in cells"
         :key="cell.id"
         class="cell"
-        :class="{ ship: shipCells.value.has(cell.id) }"
+        :class="{ ship: shipCellSet.has(cell.id) }"
         :data-cell="cell.id"
         @click="onCellClick(cell)"
       >
@@ -39,6 +39,7 @@ const emit = defineEmits<{
 }>();
 
 const shipCells = ref<Set<string>>(new Set());
+const shipCellSet = computed(() => shipCells.value);
 
 const cells = computed(() => {
   const arr: Cell[] = [];
@@ -86,7 +87,8 @@ function onCellClick(cell: Cell) {
         // Update shipCells set for UI feedback
         coordinates.forEach((coord) => {
           const cellId = `${coord.x}-${coord.y}`;
-          shipCells.value.add(cellId);
+          // Create a new Set to trigger reactivity
+          shipCells.value = new Set([...shipCells.value, cellId]);
         });
       }
       // reset selection regardless of validity

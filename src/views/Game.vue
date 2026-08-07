@@ -3,6 +3,7 @@
     <PlayerBoard :size="10" @place-ship="onPlaceShip" />
     <OpponentBoard :size="10" @fire="onFire" />
     <VictoryModal v-if="winner" :winner="winner" @restart="onRestart" />
+    <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
   </div>
 </template>
 
@@ -16,6 +17,7 @@ import { fireShot } from '../services/api';
 
 const store = useGameStore();
 const winner = ref<string | null>(null);
+const errorMessage = ref<string | null>(null);
 
 function onPlaceShip(payload: { coordinates: { x: number; y: number }[] }) {
   store.addShip({ coordinates: payload.coordinates });
@@ -27,10 +29,18 @@ async function onFire(payload: { x: number; y: number }) {
     const gameId = 'demo-game';
     const response = await fireShot(gameId, { x: payload.x, y: payload.y });
     // Expect response to contain a `result` field.
-    const result = response.result || response;
+    // Validate response format
+    if (!response || typeof response.result !== 'string') {
+      throw new Error('Invalid response format from fireShot');
+    }
+    const result = response.result;
     store.recordHit({ x: payload.x, y: payload.y, result });
+    // Clear any previous error message on success
+    errorMessage.value = null;
   } catch (e) {
-    // Emit an invalid-placement or error event could be added; for now, log.
+    // Improved error handling: capture message for UI display
+    const msg = e instanceof Error ? e.message : String(e);
+    errorMessage.value = msg;
     console.error('Failed to fire shot:', e);
   }
 }
