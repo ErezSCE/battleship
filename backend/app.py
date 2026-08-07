@@ -42,14 +42,13 @@ class PlaceShipRequest(BaseModel):
     coordinates: List[Dict[str, int]]
 
 @app.post('/place_ship')
-def place_ship(payload: Dict):
+def place_ship(request: PlaceShipRequest):
     """Endpoint to place a ship with validation.
     Returns 200 with placed coordinates on success.
     Returns 422 with error detail on validation failure.
     """
     try:
-        # Validate and parse payload using Pydantic model
-        request = PlaceShipRequest(**payload)
+        # request is already a validated Pydantic model
         coords = request.coordinates
         validated = _validate_coordinates(coords)
         return {'status': 'ok', 'placed': validated}
