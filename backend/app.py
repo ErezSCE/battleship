@@ -8,8 +8,9 @@ with the ship's coordinates and validates basic placement rules:
 - At least two coordinates are required.
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from typing import List, Dict
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -33,12 +34,19 @@ def _validate_coordinates(coords: List[Dict[str, int]]) -> List[Dict[str, int]]:
         seen.add(key)
     return coords
 
+class PlaceShipRequest(BaseModel):
+    coordinates: List[Dict[str, int]]
+
 @app.post('/place_ship')
-async def place_ship(payload: Dict):
+def place_ship(payload: Dict):
     try:
-        coords = payload.get('coordinates', [])
+        # Validate and parse payload using Pydantic model
+        request = PlaceShipRequest(**payload)
+        coords = request.coordinates
         validated = _validate_coordinates(coords)
     except ValueError as e:
-        # Simulate FastAPI validation error response
-        raise Exception(str(e))
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        # Handles Pydantic validation errors or other issues
+        raise HTTPException(status_code=422, detail=str(e))
     return {'status': 'ok', 'placed': validated}

@@ -1,6 +1,6 @@
 <template>
   <div class="player-board">
-    <div class="grid">
+    <div class="grid" :style="{'--size': props.size}">
       <div
         v-for="cell in cells"
         :key="cell.id"
@@ -29,6 +29,7 @@ interface Cell {
 const props = defineProps<{ size: number }>(); // board size (e.g., 10)
 const emit = defineEmits<{
   (e: 'place-ship', payload: { coordinates: { x: number; y: number }[] }): void;
+  (e: 'invalid-placement', payload: { message: string }): void;
 }>();
 
 const cells = computed(() => {
@@ -78,8 +79,9 @@ function generateCoordinates(start: Cell, end: Cell) {
       coords.push({ x, y: start.y });
     }
   } else {
-    // diagonal not allowed, treat as single cell
-    coords.push({ x: start.x, y: start.y });
+    // diagonal not allowed – emit validation event instead of silent fallback
+    emit('invalid-placement', { message: 'Diagonal placement is not allowed' });
+    return [];
   }
   return coords;
 }

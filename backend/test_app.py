@@ -1,4 +1,5 @@
 import pytest
+from fastapi.testclient import TestClient
 from backend.app import app, _validate_coordinates
 
 def test_validate_coordinates_success():
@@ -11,7 +12,10 @@ def test_validate_coordinates_not_aligned():
         _validate_coordinates(coords)
 
 def test_place_ship_endpoint_success():
+    client = TestClient(app)
     payload = {'coordinates': [{'x': 0, 'y': 0}, {'x': 1, 'y': 0}]}
-    response = app.post('/place_ship')(payload)  # directly invoke handler
-    assert response['status'] == 'ok'
-    assert response['placed'] == payload['coordinates']
+    response = client.post('/place_ship', json=payload)
+    assert response.status_code == 200
+    json_resp = response.json()
+    assert json_resp['status'] == 'ok'
+    assert json_resp['placed'] == payload['coordinates']

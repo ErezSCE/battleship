@@ -1,11 +1,17 @@
 """Minimal FastAPI stub for testing purposes.
 
 Provides a simple FastAPI class with a .post decorator to register route handlers.
-This stub is sufficient for the unit tests in this repository and avoids pulling
+Includes a minimal TestClient and HTTPException to satisfy tests without pulling
 the real FastAPI dependency.
 """
 
 from typing import Callable, Dict, Any
+
+class HTTPException(Exception):
+    def __init__(self, status_code: int, detail: str = None):
+        self.status_code = status_code
+        self.detail = detail
+        super().__init__(detail)
 
 class FastAPI:
     def __init__(self) -> None:
@@ -28,3 +34,25 @@ class FastAPI:
     @property
     def routes(self) -> Dict[str, Callable[[Dict[str, Any]], Any]]:
         return self._post_routes
+
+class TestClient:
+    """Very small TestClient compatible with our FastAPI stub.
+    It calls the registered route handler directly and returns an object
+    with ``status_code`` and ``json()`` method.
+    """
+    def __init__(self, app: FastAPI):
+        self.app = app
+
+    def post(self, path: str, json: Dict[str, Any] = None):
+        handler = self.app.routes.get(path)
+        if handler is None:
+            raise Exception(f"Route {path} not found")
+        payload = json or {}
+        result = handler(payload)
+        class Response:
+            def __init__(self, data):
+                self._data = data
+                self.status_code = 200
+            def json(self):
+                return self._data
+        return Response(result)
