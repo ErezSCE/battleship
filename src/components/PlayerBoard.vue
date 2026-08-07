@@ -26,7 +26,13 @@ interface Cell {
   label: string;
 }
 
-const props = defineProps<{ size: number }>(); // board size (e.g., 10)
+const props = defineProps({
+  size: {
+    type: Number,
+    required: true,
+    validator: (v: number) => Number.isInteger(v) && v > 0 && v <= 20,
+  },
+}); // board size (e.g., 10)
 const emit = defineEmits<{
   (e: 'place-ship', payload: { coordinates: { x: number; y: number }[] }): void;
   (e: 'invalid-placement', payload: { message: string }): void;
@@ -57,6 +63,8 @@ function onCellClick(cell: Cell) {
   // Prevent duplicate selection of the same cell
   if (selected.value.some((c) => c.id === cell.id)) {
     emit('invalid-placement', { message: 'Duplicate cell selection is not allowed' });
+    // Reset selection to avoid stale state
+    selected.value = [];
     return;
   }
   if (selected.value.length < 2) {
