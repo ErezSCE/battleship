@@ -1,12 +1,18 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import GameView from './views/Game.vue';
-import VictoryModal from './components/VictoryModal.vue';
+import NotFound from './components/NotFound.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'Game',
     component: GameView,
+  },
+  // Catch‑all route for undefined paths
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: NotFound,
   },
 ];
 
