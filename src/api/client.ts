@@ -24,10 +24,8 @@ export interface BoardCell {
   hit?: boolean;
 }
 
-export interface BoardInfoResponse {
-  width: number;
-  height: number;
-  ships: ShipInfo[];
+export interface BoardResponse {
+  cells: BoardCell[];
 }
 
 export interface ShipInfo {
@@ -36,26 +34,23 @@ export interface ShipInfo {
   coordinates: Coordinate[];
 }
 
-export interface OpponentViewResponse {
-  width: number;
-  height: number;
-  hits: Coordinate[];
-  misses: Coordinate[];
-}
+// Alias types for backward compatibility
+export type BoardInfoResponse = BoardResponse;
+export type OpponentViewResponse = BoardResponse;
 
-class ApiClient {
+export class ApiClient {
   private http: AxiosInstance;
 
   constructor(baseURL: string = '') {
     this.http = axios.create({ baseURL });
   }
 
-  async placeShip(gameId: string, payload: ShipPlacementRequest): Promise<BoardInfoResponse> {
-    const response = await this.http.post<BoardInfoResponse>(`/games/${gameId}/ships`, payload);
+  async placeShip(gameId: string, payload: ShipPlacementRequest): Promise<BoardResponse> {
+    const response = await this.http.post<BoardResponse>(`/games/${gameId}/ships`, payload);
     return response.data;
   }
 
-  async fireShot(gameId: string, payload: ShotRequest): Promise<BoardInfoResponse> {
+  async fireShot(gameId: string, payload: ShotRequest): Promise<BoardResponse> {
     const response = await this.http.post<BoardInfoResponse>(`/games/${gameId}/shots`, payload);
     return response.data;
   }

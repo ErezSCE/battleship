@@ -2,7 +2,7 @@
 // Pinia store managing Battleship game state and actions
 
 import { defineStore } from 'pinia';
-import { apiClient, Coordinate, BoardResponse, BoardCell, BoardInfoResponse, OpponentViewResponse } from '../api/client';
+import { apiClient, Coordinate, BoardResponse, BoardCell } from '../api/client';
 
 export const useGameStore = defineStore('game', {
   state: () => ({

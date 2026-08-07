@@ -8,7 +8,7 @@ mockedAxios.create.mockReturnValue({
   post: vi.fn(),
   get: vi.fn(),
 } as any);
-import { apiClient, Coordinate, BoardInfoResponse, OpponentViewResponse } from './client';
+import { ApiClient, Coordinate, BoardResponse } from './client';
 
 beforeEach(() => {
   vi.resetAllMocks();
