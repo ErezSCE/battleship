@@ -5,7 +5,7 @@ requirements. Real game logic will be implemented later.
 """
 
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 @dataclass
 class Ship:
@@ -29,7 +29,7 @@ class Board:
     """
     width: int = 10
     height: int = 10
-    ships: List[Ship] | None = None
+    ships: Optional[List[Ship]] = None
 
     def __post_init__(self):
         if self.ships is None:

@@ -30,6 +30,7 @@ interface Cell {
 const props = defineProps<{ size: number }>(); // board size (e.g., 10)
 const emit = defineEmits<{
   (e: 'invalid-placement', payload: { message: string }): void;
+  (e: 'place-ship', payload: { coordinates: { x: number; y: number }[] }): void;
 }>();
 
 const gameStore = useGameStore();

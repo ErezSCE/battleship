@@ -1,9 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import axios from 'axios';
-import { apiClient, Coordinate, BoardResponse } from './client';
 
 vi.mock('axios');
 const mockedAxios = vi.mocked(axios);
+// Provide a default mock axios instance before importing apiClient
+mockedAxios.create.mockReturnValue({
+  post: vi.fn(),
+  get: vi.fn(),
+} as any);
+import { apiClient, Coordinate, BoardInfoResponse, OpponentViewResponse } from './client';
 
 beforeEach(() => {
   vi.resetAllMocks();

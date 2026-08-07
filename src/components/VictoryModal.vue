@@ -19,10 +19,12 @@ const emit = defineEmits<{
   (e: 'restart'): void;
 }>();
 
+// Use store instance at component setup
+const gameStore = useGameStore();
+
 function onRestart() {
   emit('restart');
   // Dispatch store reset
-  const gameStore = useGameStore();
   gameStore.resetGame();
 }
 </script>

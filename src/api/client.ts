@@ -24,8 +24,23 @@ export interface BoardCell {
   hit?: boolean;
 }
 
-export interface BoardResponse {
-  cells: BoardCell[];
+export interface BoardInfoResponse {
+  width: number;
+  height: number;
+  ships: ShipInfo[];
+}
+
+export interface ShipInfo {
+  type: string;
+  size: number;
+  coordinates: Coordinate[];
+}
+
+export interface OpponentViewResponse {
+  width: number;
+  height: number;
+  hits: Coordinate[];
+  misses: Coordinate[];
 }
 
 class ApiClient {
@@ -35,22 +50,22 @@ class ApiClient {
     this.http = axios.create({ baseURL });
   }
 
-  async placeShip(gameId: string, payload: ShipPlacementRequest): Promise<BoardResponse> {
-    const response = await this.http.post<BoardResponse>(`/games/${gameId}/ships`, payload);
+  async placeShip(gameId: string, payload: ShipPlacementRequest): Promise<BoardInfoResponse> {
+    const response = await this.http.post<BoardInfoResponse>(`/games/${gameId}/ships`, payload);
     return response.data;
   }
 
-  async fireShot(gameId: string, payload: ShotRequest): Promise<BoardResponse> {
-    const response = await this.http.post<BoardResponse>(`/games/${gameId}/shots`, payload);
+  async fireShot(gameId: string, payload: ShotRequest): Promise<BoardInfoResponse> {
+    const response = await this.http.post<BoardInfoResponse>(`/games/${gameId}/shots`, payload);
     return response.data;
   }
 
-  async getBoard(gameId: string): Promise<BoardResponse> {
+  async getBoard(gameId: string): Promise<BoardInfoResponse> {
     const response = await this.http.get<BoardResponse>(`/games/${gameId}/board`);
     return response.data;
   }
 
-  async getOpponentView(gameId: string): Promise<BoardResponse> {
+  async getOpponentView(gameId: string): Promise<OpponentViewResponse> {
     const response = await this.http.get<BoardResponse>(`/games/${gameId}/opponent-board`);
     return response.data;
   }
