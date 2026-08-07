@@ -6,6 +6,8 @@
         :key="cell.id"
         class="cell"
         :data-cell="cell.id"
+        role="button"
+        :aria-label="`Fire at ${cell.x}, ${cell.y}`"
         @click="onCellClick(cell)"
       >
         {{ cell.label }}

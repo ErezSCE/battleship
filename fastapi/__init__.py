@@ -15,6 +15,10 @@ class HTTPException(Exception):
         self.detail = detail
         super().__init__(detail)
 
+class Depends:
+    def __init__(self, dependency=None):
+        self.dependency = dependency
+
 class FastAPI:
     def __init__(self, *args, **kwargs) -> None:
         # Accept any arguments for compatibility (e.g., title)

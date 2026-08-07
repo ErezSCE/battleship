@@ -1,43 +1,38 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from backend.api.app.main import app, _game_board, _current_turn
+from backend.api.app.main import app
 from backend.domain.game import Ship
 
 client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def reset_state():
-    # Reset the in‑memory board and turn before each test
-    _game_board.ships.clear()
-    global _current_turn
-    _current_turn = 1
+    # Reset the in‑memory board and turn before each test via API
+    client.post("/reset")
     yield
-    # Cleanup after test if needed
-    _game_board.ships.clear()
-    _current_turn = 1
+    client.post("/reset")
 
 def test_fire_miss_when_no_ships():
-    response = client.post("/fire", json={"x": 0, "y": 0})
+    response = client.post("/fire", json={"x": 0, "y": 0, "player_id": 1})
     assert response.status_code == 200
     json = response.json()
     assert json["result"] == "miss"
     assert json["message"] == "Shot missed"
 
 def test_fire_hit_when_ship_present():
-    # Place a ship at (1,1) and (1,2)
-    ship = Ship(type="Destroyer", size=2, coordinates=[(1, 1), (1, 2)])
-    _game_board.ships.append(ship)
-    response = client.post("/fire", json={"x": 1, "y": 2})
+    # Place a ship at (1,1) and (1,2) via API
+    ship_payload = [{"type": "Destroyer", "size": 2, "coordinates": [[1, 1], [1, 2]]}]
+    client.post("/place_ships", json=ship_payload)
+    response = client.post("/fire", json={"x": 1, "y": 2, "player_id": 1})
     assert response.status_code == 200
     json = response.json()
     assert json["result"] == "hit"
     assert json["message"] == "Shot hit a ship"
 
 def test_fire_not_your_turn():
-    # Simulate it's player 2's turn
-    global _current_turn
-    _current_turn = 2
-    response = client.post("/fire", json={"x": 0, "y": 0})
+    # Set turn to player 2 via API
+    client.post("/set_turn", json={"player_id": 2})
+    response = client.post("/fire", json={"x": 0, "y": 0, "player_id": 1})
     assert response.status_code == 400
     assert response.json()["detail"] == "Not your turn"
