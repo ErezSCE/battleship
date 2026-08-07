@@ -16,7 +16,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineProps, defineEmits } from 'vue';
+import { ref, computed, defineProps, defineEmits, onMounted } from 'vue';
+import { useGameStore } from '../store/gameStore';
 
 interface Cell {
   id: string;
@@ -28,11 +29,23 @@ interface Cell {
 
 const props = defineProps<{ size: number }>(); // board size (e.g., 10)
 const emit = defineEmits<{
-  (e: 'place-ship', payload: { coordinates: { x: number; y: number }[] }): void;
   (e: 'invalid-placement', payload: { message: string }): void;
 }>();
 
+const gameStore = useGameStore();
+
+// Compute cells based on store board if available, otherwise generate empty grid
 const cells = computed(() => {
+  if (gameStore.board.length) {
+    // Map store board cells to include id and label for UI
+    return gameStore.board.map((c) => ({
+      id: `${c.x}-${c.y}`,
+      x: c.x,
+      y: c.y,
+      hasShip: !!c.hasShip,
+      label: `${c.x},${c.y}`,
+    }));
+  }
   const arr: Cell[] = [];
   for (let y = 0; y < props.size; y++) {
     for (let x = 0; x < props.size; x++) {
@@ -63,21 +76,16 @@ function onCellClick(cell: Cell) {
       const [start, end] = selected.value;
       const coordinates = generateCoordinates(start, end);
       if (coordinates.length > 0) {
+        // Dispatch placement to store
+        gameStore.placeShip(coordinates);
+        // Emit for backward compatibility / external listeners
         emit('place-ship', { coordinates });
-        // Update hasShip flag on involved cells for UI feedback
-        coordinates.forEach((coord) => {
-          const target = cells.value.find((c) => c.x === coord.x && c.y === coord.y);
-          if (target) {
-            target.hasShip = true;
-          }
-        });
       }
       // reset selection regardless of validity
       selected.value.splice(0, selected.value.length);
     }
   }
 }
-
 
 function generateCoordinates(start: Cell, end: Cell) {
   const coords: { x: number; y: number }[] = [];
@@ -100,6 +108,13 @@ function generateCoordinates(start: Cell, end: Cell) {
   }
   return coords;
 }
+
+onMounted(() => {
+  // If a gameId is already set elsewhere, fetch board state
+  if (gameStore.gameId) {
+    gameStore.fetchBoard();
+  }
+});
 </script>
 
 <style scoped>

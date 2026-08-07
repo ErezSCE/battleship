@@ -12,6 +12,7 @@
 
 <script setup lang="ts">
 import { defineProps, defineEmits } from 'vue';
+import { useGameStore } from '../store/gameStore';
 
 const props = defineProps<{ winner: string }>();
 const emit = defineEmits<{
@@ -20,6 +21,9 @@ const emit = defineEmits<{
 
 function onRestart() {
   emit('restart');
+  // Dispatch store reset
+  const gameStore = useGameStore();
+  gameStore.resetGame();
 }
 </script>
 
