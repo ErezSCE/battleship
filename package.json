@@ -11,7 +11,9 @@
     "test:backend": "pytest"
   },
   "dependencies": {
-    "vue": "^3.4.0"
+    "vue": "^3.4.0",
+    "vue-router": "^4.4.0",
+    "pinia": "^2.1.7"
   },
   "devDependencies": {
     "pinia": "^2.1.7",
