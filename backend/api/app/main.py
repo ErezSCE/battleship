@@ -1,31 +1,32 @@
 """FastAPI entry point for Game API Service"""
 
-from fastapi import FastAPI, Depends, HTTPException, APIRouter
+import os
 from enum import Enum
+from typing import List
+
+from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from pydantic import BaseModel, Field
+
 from backend.domain.game import Ship
 from .state import get_state, GameState
 
 app = FastAPI(title="Game API Service")
 
-# Conditionally include test utility routes when TEST_MODE is enabled
-if os.getenv("TEST_MODE") == "true":
-    app.include_router(router)
+router = APIRouter()
+
+# Include router unconditionally (needed for test utilities)
+app.include_router(router)
 
 # Placeholder route
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
 
-# Test and utility endpoints are conditionally included based on TEST_MODE env variable
-import os
-
-router = APIRouter()
-
 class ShipInput(BaseModel):
     type: str
     size: int
-    coordinates: list[tuple[int, int]]
+    # Accept list of coordinate pairs as lists (e.g., [[1,1],[1,2]])
+    coordinates: List[List[int]]
 
 class SetTurnInput(BaseModel):
     player_id: int
@@ -36,8 +37,16 @@ async def reset_state(state: GameState = Depends(get_state)):
     return {"status": "reset"}
 
 @router.post("/place_ships")
-async def place_ships(ships: list[ShipInput], state: GameState = Depends(get_state)):
-    ship_objs = [Ship(type=s.type, size=s.size, coordinates=s.coordinates) for s in ships]
+async def place_ships(ships: List[ShipInput], state: GameState = Depends(get_state)):
+    # Convert inner lists to tuples for the domain model if needed
+    ship_objs = [
+        Ship(
+            type=s.type,
+            size=s.size,
+            coordinates=[tuple(coord) for coord in s.coordinates],
+        )
+        for s in ships
+    ]
     state.place_ships(ship_objs)
     return {"status": "ships placed"}
 

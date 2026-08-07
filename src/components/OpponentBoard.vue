@@ -56,7 +56,15 @@ const cells = computed(() => {
   return arr;
 });
 
+import { ref } from 'vue';
+
+const firedCells = ref<Set<string>>(new Set());
+
 function onCellClick(cell: Cell) {
+  if (firedCells.value.has(cell.id)) {
+    return; // ignore duplicate clicks
+  }
+  firedCells.value.add(cell.id);
   emit('fire', { x: cell.x, y: cell.y });
 }
 </script>
