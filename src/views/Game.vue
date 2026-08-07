@@ -24,6 +24,8 @@ function onPlaceShip(payload: { coordinates: { x: number; y: number }[] }) {
   store.addShip({ coordinates: payload.coordinates });
 }
 
+const route = useRoute();
+
 async function onFire(payload: { x: number; y: number }) {
   try {
     // Retrieve gameId from route params if available, otherwise use default.

@@ -24,23 +24,23 @@ export interface FirePayload {
   y: number;
 }
 
-export async function placeShip(gameId: string, payload: ShipPlacementPayload) {
+export async function placeShip(payload: ShipPlacementPayload) {
   try {
-    const response = await api.post(`/games/${gameId}/ships`, payload);
+    const response = await api.post(`/place_ships`, payload);
     return response.data;
   } catch (error) {
-    // Preserve original error details for UI diagnostics
-    throw error;
+    // Sanitize error before throwing
+    throw new Error('Failed to place ships');
   }
 }
 
-export async function fireShot(payload: FirePayload, playerId: number = 1) {
+export async function fireShot(gameId: string, payload: FirePayload, playerId: number = 1) {
   try {
     const response = await api.post(`/fire`, { ...payload, player_id: playerId });
     return response.data;
   } catch (error) {
-    // Preserve original error details for better diagnostics
-    throw error;
+    // Sanitize error before throwing
+    throw new Error('Failed to fire shot');
   }
 }
 
