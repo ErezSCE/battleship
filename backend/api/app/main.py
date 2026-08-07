@@ -1,6 +1,6 @@
 """FastAPI entry point for Game API Service"""
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from enum import Enum
 from pydantic import BaseModel, Field
 from backend.domain.game import Ship
@@ -8,18 +8,19 @@ from .state import get_state, GameState
 
 app = FastAPI(title="Game API Service")
 
+# Conditionally include test utility routes when TEST_MODE is enabled
+if os.getenv("TEST_MODE") == "true":
+    app.include_router(router)
+
 # Placeholder route
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
 
-# Backward‑compatible globals for legacy tests (not used by the endpoint)
-_state_instance: GameState = get_state()
-_game_board = _state_instance.board  # type: ignore
-_current_turn = _state_instance.current_turn  # type: ignore
+# Test and utility endpoints are conditionally included based on TEST_MODE env variable
+import os
 
-# Additional test and utility endpoints (not part of production API)
-from pydantic import BaseModel
+router = APIRouter()
 
 class ShipInput(BaseModel):
     type: str
@@ -29,18 +30,18 @@ class ShipInput(BaseModel):
 class SetTurnInput(BaseModel):
     player_id: int
 
-@app.post("/reset")
+@router.post("/reset")
 async def reset_state(state: GameState = Depends(get_state)):
     state.reset()
     return {"status": "reset"}
 
-@app.post("/place_ships")
+@router.post("/place_ships")
 async def place_ships(ships: list[ShipInput], state: GameState = Depends(get_state)):
     ship_objs = [Ship(type=s.type, size=s.size, coordinates=s.coordinates) for s in ships]
     state.place_ships(ship_objs)
     return {"status": "ships placed"}
 
-@app.post("/set_turn")
+@router.post("/set_turn")
 async def set_turn(payload: SetTurnInput, state: GameState = Depends(get_state)):
     state.current_turn = payload.player_id
     return {"status": "turn set", "current_turn": state.current_turn}

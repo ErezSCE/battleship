@@ -8,7 +8,10 @@
         :data-cell="cell.id"
         role="button"
         :aria-label="`Fire at ${cell.x}, ${cell.y}`"
+        :tabindex="0"
         @click="onCellClick(cell)"
+        @keydown.enter="onCellClick(cell)"
+        @keydown.space.prevent="onCellClick(cell)"
       >
         {{ cell.label }}
       </div>
@@ -30,7 +33,7 @@ const props = defineProps({
   size: {
     type: Number,
     default: 10,
-    validator: (value: number) => Number.isInteger(value) && value > 0,
+    validator: (value: number) => Number.isInteger(value) && value > 0 && value <= 20,
   },
 });
 const emit = defineEmits<{
