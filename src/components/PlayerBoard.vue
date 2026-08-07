@@ -5,7 +5,7 @@
         v-for="cell in cells"
         :key="cell.id"
         class="cell"
-        :class="{ ship: shipCells.has(cell.id) }"
+        :class="{ ship: shipCells.value.has(cell.id) }"
         :data-cell="cell.id"
         @click="onCellClick(cell)"
       >
@@ -60,6 +60,7 @@ const cells = computed(() => {
 const selected = ref<Cell[]>([]);
 
 function onCellClick(cell: Cell) {
+  // Check for overlap with existing ship cells before placement
   // Prevent duplicate selection of the same cell
   if (selected.value.some((c) => c.id === cell.id)) {
     emit('invalid-placement', { message: 'Duplicate cell selection is not allowed' });
@@ -73,6 +74,14 @@ function onCellClick(cell: Cell) {
       const [start, end] = selected.value;
       const coordinates = generateCoordinates(start, end);
       if (coordinates.length > 0) {
+        // Validate overlap with existing ships
+        const overlap = coordinates.some(coord => shipCells.value.has(`${coord.x}-${coord.y}`));
+        if (overlap) {
+          emit('invalid-placement', { message: 'Ship placement overlaps existing ship' });
+          // Reset selection and abort
+          selected.value.splice(0, selected.value.length);
+          return;
+        }
         emit('place-ship', { coordinates });
         // Update shipCells set for UI feedback
         coordinates.forEach((coord) => {

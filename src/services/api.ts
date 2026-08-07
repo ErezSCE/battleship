@@ -29,8 +29,8 @@ export async function placeShip(gameId: string, payload: ShipPlacementPayload) {
     const response = await api.post(`/games/${gameId}/ships`, payload);
     return response.data;
   } catch (error) {
-    // Wrap and rethrow a typed error for UI handling
-    throw new Error(`Failed to place ship: ${(error as Error).message}`);
+    // Preserve original error details for UI diagnostics
+    throw error;
   }
 }
 
