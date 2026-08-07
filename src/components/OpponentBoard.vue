@@ -24,7 +24,13 @@ interface Cell {
   label: string;
 }
 
-const props = defineProps<{ size: number }>();
+const props = defineProps({
+  size: {
+    type: Number,
+    default: 10,
+    validator: (value: number) => Number.isInteger(value) && value > 0,
+  },
+});
 const emit = defineEmits<{
   (e: 'fire', payload: { x: number; y: number }): void;
 }>();

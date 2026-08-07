@@ -26,9 +26,32 @@ class FastAPI:
 
         ``response_model`` and other FastAPI kwargs are accepted for compatibility
         but ignored by the stub implementation.
+        This stub also attempts to instantiate Pydantic models for the first argument
+        if the handler expects one, and handles async functions.
         """
-        def decorator(func: Callable[[Dict[str, Any]], Any]):
-            self._post_routes[path] = func
+        def decorator(func: Callable[[Any], Any]):
+            import inspect
+            from pydantic import BaseModel
+            import asyncio
+            def wrapper(payload: Dict[str, Any]):
+                # Determine if the first parameter expects a Pydantic model
+                sig = inspect.signature(func)
+                params = list(sig.parameters.values())
+                if params:
+                    annotation = params[0].annotation
+                    if inspect.isclass(annotation) and issubclass(annotation, BaseModel):
+                        # Instantiate model with payload dict
+                        model_instance = annotation(**payload)
+                        result = func(model_instance)
+                    else:
+                        result = func(payload)
+                else:
+                    result = func(payload)
+                # Await if coroutine
+                if inspect.iscoroutine(result):
+                    result = asyncio.run(result)
+                return result
+            self._post_routes[path] = wrapper
             return func
         return decorator
 
@@ -40,18 +63,6 @@ class FastAPI:
         """
         def decorator(func: Callable[[], Any]):
             self._get_routes[path] = func
-            return func
-        return decorator
-        """Register a POST route.
-
-        Usage::
-            app = FastAPI()
-            @app.post('/example')
-            def handler(payload: dict):
-                ...
-        """
-        def decorator(func: Callable[[Dict[str, Any]], Any]):
-            self._post_routes[path] = func
             return func
         return decorator
 

@@ -31,6 +31,9 @@ async def fire_shot(request: FireShotRequest):
     # Enforce turn order: only player 1 can fire via this endpoint
     if _current_turn != 1:
         raise HTTPException(status_code=400, detail="Not your turn")
+    # Validate coordinates are within board bounds
+    if request.x < 0 or request.y < 0 or request.x >= _game_board.width or request.y >= _game_board.height:
+        raise HTTPException(status_code=400, detail="Coordinates out of bounds")
     # Determine hit or miss
     hit = any((request.x, request.y) in ship.coordinates for ship in _game_board.ships)
     result = "hit" if hit else "miss"
