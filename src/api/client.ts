@@ -61,14 +61,15 @@ class ApiClient {
   }
 
   async getBoard(gameId: string): Promise<BoardInfoResponse> {
-    const response = await this.http.get<BoardResponse>(`/games/${gameId}/board`);
+    const response = await this.http.get<BoardInfoResponse>(`/games/${gameId}/board`);
     return response.data;
   }
 
   async getOpponentView(gameId: string): Promise<OpponentViewResponse> {
-    const response = await this.http.get<BoardResponse>(`/games/${gameId}/opponent-board`);
+    const response = await this.http.get<OpponentViewResponse>(`/games/${gameId}/opponent-board`);
     return response.data;
   }
+
 }
 
 export const apiClient = new ApiClient();
