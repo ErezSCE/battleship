@@ -5,7 +5,7 @@
         v-for="cell in cells"
         :key="cell.id"
         class="cell"
-        :class="{ ship: cell.hasShip }"
+        :class="{ ship: shipCells.has(cell.id) }"
         :data-cell="cell.id"
         @click="onCellClick(cell)"
       >
@@ -31,6 +31,8 @@ const emit = defineEmits<{
   (e: 'place-ship', payload: { coordinates: { x: number; y: number }[] }): void;
   (e: 'invalid-placement', payload: { message: string }): void;
 }>();
+
+const shipCells = ref<Set<string>>(new Set());
 
 const cells = computed(() => {
   const arr: Cell[] = [];
@@ -64,12 +66,10 @@ function onCellClick(cell: Cell) {
       const coordinates = generateCoordinates(start, end);
       if (coordinates.length > 0) {
         emit('place-ship', { coordinates });
-        // Update hasShip flag on involved cells for UI feedback
+        // Update shipCells set for UI feedback
         coordinates.forEach((coord) => {
-          const target = cells.value.find((c) => c.x === coord.x && c.y === coord.y);
-          if (target) {
-            target.hasShip = true;
-          }
+          const cellId = `${coord.x}-${coord.y}`;
+          shipCells.value.add(cellId);
         });
       }
       // reset selection regardless of validity
